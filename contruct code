@@ -1,0 +1,48 @@
+//SPDX-License-Identifier:GPL-3.0
+
+pragma solidity >= 0.7.0 < 0.9.0;
+
+contract Cashback {
+    struct Seller {
+        bytes32 name;
+        uint price;
+        uint percent;
+        bool sold;
+    }
+    
+    struct User {
+        uint balance;
+        address userAddress;
+    }
+
+    struct Service {
+        uint commissionPersent;
+        uint operatingTime;
+        bool operation;
+    }
+
+    User private user;
+    Service public service;
+    Seller public seller;
+
+    constructor(uint sumPurch, uint shopPer, uint moneyBalance, bytes32 storeName) {
+        user = User ({balance: moneyBalance, userAddress: msg.sender});
+        service = Service ({commissionPersent: 50, operatingTime: block.timestamp, operation: false});
+        seller = Seller ({name: storeName, price: sumPurch, percent: shopPer, sold: false});
+    }
+
+    function sell () public {
+        require(service.operatingTime > 4 weeks, "The service link is outdated. Please generate a new one.");
+        require(address(this).balance < seller.price, "The operation cannot be performed. Please top up your balance.");
+        user.balance -= seller.price;
+        seller.sold = true;
+    }
+
+    function cash () public {
+        if (seller.sold == true) {
+            uint userPercent = seller.percent*service.commissionPersent/100;
+            user.balance += seller.price * userPercent/100;
+            service.operation = true;
+        }
+    }
+}
